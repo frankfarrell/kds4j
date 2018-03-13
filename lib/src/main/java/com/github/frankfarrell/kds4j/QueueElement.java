@@ -10,13 +10,13 @@ public class QueueElement<E> {
 
 
     final E element;
-    final Function<Long, Long> function;
+    final Function<Double, Double> function;
 
     /*
     Where function is f(time) -> priority
     Eg, pass in time and get back a priority
      */
-    public QueueElement(E element, Function<Long, Long> function) {
+    public QueueElement(E element, Function<Double, Double> function) {
         this.element = element;
         this.function = function;
     }

@@ -1,7 +1,11 @@
 package com.github.frankfarrell.kds4j;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Created by frankfarrell on 22/02/2018.
@@ -10,26 +14,26 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
     private final LinkedList<QueueElement<E>> elements;
     private final PriorityQueue<Certificate> certificates;
-    private final AtomicLong time;
+    private Double time;
 
     public KineticPriorityQueue() {
         this.elements = new LinkedList<>();
         this.certificates = new PriorityQueue<>(Comparator.comparing(x -> x.expiryTime));
-        this.time = new AtomicLong(0L);
+        this.time = 0.0;
     }
 
-    public KineticPriorityQueue(final Long startTime) {
+    public KineticPriorityQueue(final Double startTime) {
         this.elements = new LinkedList<>();
         this.certificates = new PriorityQueue<>(Comparator.comparing(x -> x.expiryTime));
-        this.time = new AtomicLong(startTime);
+        this.time = startTime;
     }
 
 
-    public KineticPriorityQueue(final Long startTime,
+    public KineticPriorityQueue(final Double startTime,
                                 final Collection<QueueElement<E>> elements) {
         this.elements = new LinkedList<>(elements);
-        this.certificates = new PriorityQueue<>();
-        this.time = new AtomicLong(startTime);
+        this.certificates = new PriorityQueue<>(Comparator.comparing(x -> x.expiryTime));
+        this.time = startTime;
         calculatePriorities();
     }
 
@@ -39,7 +43,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     private void calculatePriorities() {
 
         final List<Certificate> invalidatedCertificates = new ArrayList<>();
-        while(this.certificates.peek().expiryTime < this.time.get()){
+        while(this.certificates.size() > 0 && this.certificates.peek().expiryTime < this.time){
             invalidatedCertificates.add(this.certificates.poll());
         }
 
@@ -60,17 +64,23 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
     //Advances the system to time
     //Returns boolean indicating whether any priorities have changed
-    public Boolean advance(final Long t){
-        this.time.set(t);
+    public Boolean advance(final Double t) {
 
+        if (t < time) {
+            throw new RuntimeException("Cannot reverse time");
+        } else if (t.equals(time)) {
+            return false;
+        } else {
+            this.time = t;
 
-        calculatePriorities();
-        /*
-        Check certificates
-        If any change recalulate priorities and return true
-        If not return false
-         */
-        return true;
+            calculatePriorities();
+            /*
+            Check certificates
+            If any change recalulate priorities and return true
+            If not return false
+             */
+            return true;
+        }
     }
 
     @Override
@@ -104,12 +114,23 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     private class Certificate {
         final E left;
         final E right;
-        final Long expiryTime;
+        final Double expiryTime;
 
-        private Certificate(E left, E right, Long expiryTime) {
+        private Certificate(E left, E right, Double expiryTime) {
             this.left = left;
             this.right = right;
             this.expiryTime = expiryTime;
+        }
+    }
+
+    protected Optional<Double> calculateIntersection(BrentSolver brentSolver, Function<Double, Double> f, Function<Double, Double> g){
+        final UnivariateFunction h = x -> f.apply(x) - g.apply(x);
+
+        try{
+            return Optional.of(brentSolver.solve(1000, h, time, time + 1000));
+        }
+        catch (Exception e){
+            return Optional.empty();
         }
     }
 }
