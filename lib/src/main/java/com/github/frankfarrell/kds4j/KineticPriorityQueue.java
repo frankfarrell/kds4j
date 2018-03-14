@@ -20,6 +20,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     public static final int DEFAULT_MAXIMAL_ORDER = 5;
     //If the upper and lower brackets have the same sign, we add exponents of the this value to the upper until they aren't, for SOLVER_BRACKETING_ITERATIONS
     public static final int BRACKETING_EXPONANT_BASE = 2;
+    public static final int SOLVER_MAX_EVAL = 1000;
     private final LinkedList<QueueElement<E>> elements;
     private final PriorityQueue<Certificate> certificates;
     private Double time;
@@ -177,7 +178,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
         final UnivariateFunction h = x -> f.apply(x) - g.apply(x);
 
         try{
-            return Optional.of(solver.solve(100, h, time, upperBound, AllowedSolution.LEFT_SIDE));
+            return Optional.of(solver.solve(SOLVER_MAX_EVAL, h, time, upperBound, AllowedSolution.LEFT_SIDE));
         }
         catch (NoBracketingException ex){
             return calculateIntersectionInner(f,g,time + Math.pow(BRACKETING_EXPONANT_BASE, iteration), iteration+1);

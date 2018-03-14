@@ -5,6 +5,7 @@ import org.assertj.core.data.Percentage;
 import org.junit.Test;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -102,6 +103,31 @@ public class KineticPriorityQueueTest {
         queueUnderTest.advance(5.0);
         Optional<Double> secondValue = queueUnderTest.calculateIntersection(x -> x, x -> (x + 3));
         assertThat(secondValue).isEmpty();
+
+    }
+
+    @Test
+    public void itCorrectlyCalculatesIntersectionForCubicFunctions() {
+        KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<>(-11.0);
+
+        Function<Double, Double> cubicFunctionA = x -> 3 + Math.sin(x) + x + (3*Math.pow(x,2))- Math.pow(x, 3);
+        Function<Double, Double> cubicFunctionB = x -> 1 + Math.pow(x, 3) + (2*Math.pow(x,2)) - (8*x) +1;
+
+        Optional<Double> value = queueUnderTest.calculateIntersection(cubicFunctionA, cubicFunctionB);
+        assertThat(value.get()).isCloseTo(-1.883,Percentage.withPercentage(0.05));
+
+        queueUnderTest.advance(-1.0);
+        Optional<Double> secondValue = queueUnderTest.calculateIntersection(cubicFunctionA, cubicFunctionB);
+        assertThat(secondValue.get()).isCloseTo(-0.1013,Percentage.withPercentage(0.05));
+
+
+        queueUnderTest.advance(1.0);
+        Optional<Double> thirdValue = queueUnderTest.calculateIntersection(cubicFunctionA, cubicFunctionB);
+        assertThat(thirdValue.get()).isCloseTo(2.462,Percentage.withPercentage(0.05));
+
+        queueUnderTest.advance(5.0);
+        Optional<Double> emptyValue = queueUnderTest.calculateIntersection(cubicFunctionA, cubicFunctionB);
+        assertThat(emptyValue).isEmpty();
 
     }
 }
