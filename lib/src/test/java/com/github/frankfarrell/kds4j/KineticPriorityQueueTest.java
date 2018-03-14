@@ -130,4 +130,16 @@ public class KineticPriorityQueueTest {
         assertThat(emptyValue).isEmpty();
 
     }
+
+    @Test
+    public void itCorrectlyReturnsEmptyForFunctionsToMeetButDoNotIntersect() {
+        KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<>(1.0);
+
+        //They meet at 2.5 but do not intersect
+        Function<Double, Double> quadraticFunctionA = x -> Math.pow(x,2) -5*x +2;
+        Function<Double, Double> quadraticFunctionB = x -> -10.5 - Math.pow(x, 2) +5*x;
+
+        Optional<Double> value = queueUnderTest.calculateIntersection(quadraticFunctionA, quadraticFunctionB);
+        assertThat(value).isEmpty();
+    }
 }
