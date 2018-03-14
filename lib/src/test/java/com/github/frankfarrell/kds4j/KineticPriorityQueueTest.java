@@ -10,6 +10,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
  * Created by frankfarrell on 13/03/2018.
+ *
+ * Nice site for visualising these functions: https://www.desmos.com/calculator
+ *
+ * https://stackoverflow.com/questions/27836303/unable-to-solve-univariate-function-using-apache-commons-math-library
+ *
+ * https://en.wikipedia.org/wiki/Brent%27s_method
  */
 public class KineticPriorityQueueTest {
 
@@ -51,11 +57,11 @@ public class KineticPriorityQueueTest {
 
         BrentSolver brentSolver = new BrentSolver();
 
-        Optional<Double> value = queueUnderTest.calculateIntersection(brentSolver, x -> 8 - x, x -> x / 2 + 5);
+        Optional<Double> value = queueUnderTest.calculateIntersection(x -> 8 - x, x -> x / 2 + 5);
         assertThat(value.get()).isCloseTo(2.0, Percentage.withPercentage(0.001));
 
         queueUnderTest.advance(100.0);
-        Optional<Double> valueWithoutSolution = queueUnderTest.calculateIntersection(brentSolver, x -> 8 - x, x -> x / 2 + 5);
+        Optional<Double> valueWithoutSolution = queueUnderTest.calculateIntersection(x -> 8 - x, x -> x / 2 + 5);
         assertThat(valueWithoutSolution).isEmpty();
     }
 
@@ -65,11 +71,37 @@ public class KineticPriorityQueueTest {
 
         BrentSolver brentSolver = new BrentSolver();
 
-        Optional<Double> value = queueUnderTest.calculateIntersection(brentSolver, x -> 8 - x, x -> (x * x) / 2 - 4 * x);
+        Optional<Double> value = queueUnderTest.calculateIntersection(x -> 8 - x, x -> (x * x) / 2 - 4 * x);
         assertThat(value.get()).isCloseTo(8.0, Percentage.withPercentage(0.001));
 
         queueUnderTest.advance(100.0);
-        Optional<Double> valueWithoutSolution = queueUnderTest.calculateIntersection(brentSolver, x -> 8 - x, x -> (x * x) / 2 - 4 * x);
+        Optional<Double> valueWithoutSolution = queueUnderTest.calculateIntersection(x -> 8 - x, x -> (x * x) / 2 - 4 * x);
         assertThat(valueWithoutSolution).isEmpty();
+    }
+
+    @Test
+    public void itCorrectlyEvaluatesIntersectionForLinearAndGeometricsFunctions() {
+        KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<>(1.0);
+
+        Optional<Double> value = queueUnderTest.calculateIntersection(x -> x, x -> (x + 3) * Math.cos(5-x));
+        assertThat(value.get()).isCloseTo(4.04, Percentage.withPercentage(0.05));
+
+        queueUnderTest.advance(5.0);
+        Optional<Double> secondValue = queueUnderTest.calculateIntersection(x -> x, x -> (x + 3) * Math.cos(5-x));
+        assertThat(secondValue.get()).isCloseTo(5.849, Percentage.withPercentage(0.05));
+
+    }
+
+    @Test
+    public void itCorrectlyReturnsEmptyForFunctionsThatDoNotIntersect() {
+        KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<>(1.0);
+
+        Optional<Double> value = queueUnderTest.calculateIntersection(x -> x, x -> (x + 3) );
+        assertThat(value).isEmpty();
+
+        queueUnderTest.advance(5.0);
+        Optional<Double> secondValue = queueUnderTest.calculateIntersection(x -> x, x -> (x + 3));
+        assertThat(secondValue).isEmpty();
+
     }
 }
