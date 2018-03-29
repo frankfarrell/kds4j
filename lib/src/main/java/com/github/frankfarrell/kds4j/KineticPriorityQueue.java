@@ -282,16 +282,19 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
         //Returns and deletes the first element in the ArrayList.
         //also deletes from certs ArrayList
+        final QueueElement<E> firstElement = elements.remove(0);
+        if(elementCertificates.size() > 0){
+            final Certificate firstCertificate = elementCertificates.remove(0);
+            elementCertificates.remove(firstCertificate);
+        }
 
-        //Do we need to delete from certs priority list too?
-
-        return null;
+        return firstElement;
     }
 
     @Override
     public QueueElement<E> peek() {
         //Returns first element if it exists from ArrayList without deletion
-        return null;
+        return elements.get(0);
     }
 
     /*

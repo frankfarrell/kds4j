@@ -53,6 +53,28 @@ public class KineticPriorityQueueTest {
     }
 
     @Test
+    public void itHasTheCorrectOrderingAtTheInitialTime() {
+        KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<String>(9.0);
+
+        /*
+        Priority will be the follow
+        time:
+        0  -> A, B, C
+        2  -> B, A, C
+        8  -> B, C, A
+        10 -> C, B, A
+         */
+
+        queueUnderTest.add(new QueueElement<>("A", x -> 8 - x));
+        queueUnderTest.add(new QueueElement<>("B", x -> x / 2 + 5));
+        queueUnderTest.add(new QueueElement<>("C", x -> (x * x) / 2 - 4 * x));
+
+        assertThat(queueUnderTest.poll().element).isEqualTo("B");
+        assertThat(queueUnderTest.poll().element).isEqualTo("C");
+        assertThat(queueUnderTest.poll().element).isEqualTo("A");
+
+    }
+    @Test
     public void itCorrectlyEvaluatesIntersectionForLinearFunctions() {
         KineticPriorityQueue<String> queueUnderTest = new KineticPriorityQueue<>(0.0);
 
