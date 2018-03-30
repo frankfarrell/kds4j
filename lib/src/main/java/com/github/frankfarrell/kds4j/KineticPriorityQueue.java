@@ -6,6 +6,7 @@ import org.apache.commons.math3.exception.NoBracketingException;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -99,7 +100,17 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     }
 
     protected ArrayList<QueueElement<E>> getTotalOrdering(final Collection<QueueElement<E>> elements, final Double time) {
-        return elements.stream().sorted(Comparator.comparing(x -> x.function.apply(time))).collect(Collectors.toCollection(ArrayList::new));
+        return elements.stream().sorted((x, y) -> {
+            final Double xValue = x.function.apply(this.time);
+            final Double yValue = y.function.apply(this.time);
+            if (xValue >yValue){
+                return -1;
+            }
+            else if (yValue > xValue){
+                return 1;
+            }
+            else return 0;
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static BracketingNthOrderBrentSolver getDefaultSolver(){
@@ -111,9 +122,9 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
             if (left.expiryTime.isPresent() && right.expiryTime.isPresent()) {
                 return left.expiryTime.get().compareTo(right.expiryTime.get());
             } else if (left.expiryTime.isPresent()) {
-                return 1;
-            } else if (right.expiryTime.isPresent()) {
                 return -1;
+            } else if (right.expiryTime.isPresent()) {
+                return 1;
             } else {
                 return 0;
             }
@@ -150,39 +161,103 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
         if(invalidatedCertificates.size() > 0) {
 
-            /*
-            For each cert
-            1) Get the relevant elements and certs from the 2 ArrayLists
-            2) Do swapping as necessary and create certs
-            3) Will need to create a new cert for i-1 too, since i always has a cert in relation to i+1
-             */
+            final SortedSet<Integer> elementIndices =
+                    invalidatedCertificates.stream()
+                            .map(elementCertificates::indexOf)
+                            //Filter out certficates of non-contiguous elements that have been removed already from the elementsCertificates list
+                            .filter(index -> index >=0)
+                            .collect(Collectors.toCollection(TreeSet::new));
 
-            for(int i=0; i<invalidatedCertificates.size() && i+1 < elements.size(); i++){
-
-                final QueueElement<E> newLeft = elements.get(i+1);
-                final QueueElement<E> newRight = elements.get(i);
-                final Certificate newCertificate =
-                        calculateIntersection(newLeft.function, newRight.function)
-                                .map(value ->  new Certificate(newLeft.element, newRight.element, value))
-                                .orElse(new Certificate(newLeft.element, newRight.element));
-
-                //The ordering of the certs should match the ordering of the elements?
-                Collections.swap(elements, i, i+1);
-                certificatesPriorityQueue.add(newCertificate);
+            final SortedSet<Integer> elementIndicesPlusOneTreeSet = new TreeSet<>();
+            for(Integer index : elementIndices){
+                if(index > 0) {
+                    elementIndicesPlusOneTreeSet.add(index -1);
+                }
+                elementIndicesPlusOneTreeSet.add(index);
+                elementIndicesPlusOneTreeSet.add(index +1);
             }
+
+            final List<Integer> elementIndicesPlusOne = new ArrayList<>(elementIndicesPlusOneTreeSet);
+
+            final List<QueueElement<E>> invalidatedElements = elementIndicesPlusOne.stream().map(elements::get).collect(Collectors.toList());
+
+            final List<QueueElement<E>> sortedElements = getTotalOrdering(invalidatedElements, this.time);
+
+            //Zip indices and the sorted elements into the elements and certificates lists
+            final List<Certificate> newCertificates =
+                    IntStream.range(0, sortedElements.size())
+                            //This is a way to reverse the order of the intstream
+                            .boxed()
+                            .collect(Collector.of(
+                                    ArrayDeque<Integer>::new,
+                                    ArrayDeque::addFirst,
+                                    (ArrayDeque<Integer> d1, ArrayDeque<Integer> d2) -> { d2.addAll(d1); return d2; }))
+                            .stream()
+                            .map(i -> {
+                                //Im not sure how this could happen though its the last element, it wont have a certificate
+                                if(elementIndicesPlusOne.get(i) > elements.size() -1){
+                                    elements.add(sortedElements.get(i));
+                                    return Optional.<Certificate>empty();
+                                }
+                                else{
+
+                                    final QueueElement<E> left = sortedElements.get(i);
+                                    final Integer indexOfLeft = elementIndicesPlusOne.get(i);
+                                    final QueueElement<E> potentialRight = elements.set(indexOfLeft, left);
+
+                                    //Its the last element now, it has no certificate
+                                    if (indexOfLeft +1 >= elements.size()) {
+                                        return Optional.<Certificate>empty();
+                                    }
+
+                                    final Certificate newCertificate;
+                                    //Its the last of the sorted elements no need to swap
+                                    if(i.equals(sortedElements.size()-1)){
+                                        final QueueElement<E> right = elements.get(indexOfLeft +1);
+                                        newCertificate =
+                                                    calculateIntersection(left.function, right.function)
+                                                            .map(value ->  new Certificate(left.element, right.element, value))
+                                                            .orElse(new Certificate(left.element, right.element));
+                                    }
+                                    else{
+                                        final QueueElement<E> actualRight;
+
+                                        //If there was no change we do not need to reorder
+                                        if(!potentialRight.equals(left)){
+                                            elements.set(indexOfLeft +1 , potentialRight);
+                                            actualRight= potentialRight;
+                                        }
+                                        else {
+                                            actualRight = elements.get(indexOfLeft +1);
+                                        }
+
+                                        newCertificate =
+                                                calculateIntersection(left.function, actualRight.function)
+                                                        .map(value ->  new Certificate(left.element, actualRight.element, value))
+                                                        .orElse(new Certificate(left.element, actualRight.element));
+                                    }
+
+                                    if(elementCertificates.size() < elementIndicesPlusOne.get(i)){
+                                        elementCertificates.add(newCertificate);
+                                    }
+                                    else{
+                                        elementCertificates.set(elementIndicesPlusOne.get(i), newCertificate);
+                                    }
+
+                                    return Optional.of(newCertificate);
+                                }
+                    })
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+
+            certificatesPriorityQueue.addAll(newCertificates);
             return true;
         }
         else{
             return false;
             //Priority ordering hasn't changed
         }
-        /*
-        First we need to reorder at least the elements that are in the certificatesPriorityQueue,
-        (and any elements that had certicates with those elements?)
-        Compare all these elements to each other and create certificatesPriorityQueue
-        Then do some sort of binary search on other elements and slot in new certificatesPriorityQueue.
-
-         */
     }
 
     //Advances the system to time
@@ -195,11 +270,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
             return false;
         } else {
             this.time = t;
-            /*
-            Check certificatesPriorityQueue
-            If any change recalulate priorities and return true
-            If not return false
-             */
+
             return reCalculatePriorities();
         }
     }
@@ -286,6 +357,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
         if(elementCertificates.size() > 0){
             final Certificate firstCertificate = elementCertificates.remove(0);
             elementCertificates.remove(firstCertificate);
+            certificatesPriorityQueue.remove(firstCertificate);
         }
 
         return firstElement;

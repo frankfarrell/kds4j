@@ -49,7 +49,9 @@ public class KineticPriorityQueueTest {
         assertThat(queueUnderTest.peek().element).isEqualTo("B");
 
         assertThat(queueUnderTest.advance(11.0)).isTrue();
-        assertThat(queueUnderTest.peek().element).isEqualTo("C");
+        assertThat(queueUnderTest.poll().element).isEqualTo("C");
+        assertThat(queueUnderTest.poll().element).isEqualTo("B");
+        assertThat(queueUnderTest.poll().element).isEqualTo("A");
     }
 
     @Test
