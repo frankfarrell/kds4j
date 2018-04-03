@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created by frankfarrell on 22/02/2018.
  */
-public class KineticPriorityQueue<E> extends AbstractQueue<KineticElement<E>> implements KineticDataStructure {
+public class KineticPriorityQueue<E> extends AbstractQueue<OneDimensionalKineticElement<E>> implements KineticDataStructure {
 
     private final KineticSortedList<E> backingKineticSortedList;
 
@@ -23,12 +23,12 @@ public class KineticPriorityQueue<E> extends AbstractQueue<KineticElement<E>> im
 
 
     public KineticPriorityQueue(final Double startTime,
-                                final Collection<KineticElement<E>> elements) {
+                                final Collection<OneDimensionalKineticElement<E>> elements) {
         this.backingKineticSortedList = new KineticSortedList<>(startTime, elements);
     }
 
     public KineticPriorityQueue(final Double startTime,
-                                final Collection<KineticElement<E>> elements,
+                                final Collection<OneDimensionalKineticElement<E>> elements,
                                 final BracketingNthOrderBrentSolver solver) {
         this.backingKineticSortedList = new KineticSortedList<>(startTime, elements, solver);
     }
@@ -41,15 +41,14 @@ public class KineticPriorityQueue<E> extends AbstractQueue<KineticElement<E>> im
         this.backingKineticSortedList = new KineticSortedList<>(startTime, solver);
     }
 
-    //Advances the system to time
-    //Returns boolean indicating whether any priorities have changed
+    @Override
     public Boolean advance(final Double t) {
         return this.backingKineticSortedList.advance(t);
     }
 
     @Deprecated
     @Override
-    public Iterator<KineticElement<E>> iterator() {
+    public Iterator<OneDimensionalKineticElement<E>> iterator() {
         throw new NotImplementedException();
     }
 
@@ -59,17 +58,17 @@ public class KineticPriorityQueue<E> extends AbstractQueue<KineticElement<E>> im
     }
 
     @Override
-    public boolean offer(final KineticElement<E> element) {
+    public boolean offer(final OneDimensionalKineticElement<E> element) {
         return this.backingKineticSortedList.add(element);
     }
 
     @Override
-    public KineticElement<E> poll() {
+    public OneDimensionalKineticElement<E> poll() {
         return this.backingKineticSortedList.remove(0);
     }
 
     @Override
-    public KineticElement<E> peek() {
+    public OneDimensionalKineticElement<E> peek() {
         //Returns first element if it exists from ArrayList without deletion
         return this.backingKineticSortedList.get(0);
     }

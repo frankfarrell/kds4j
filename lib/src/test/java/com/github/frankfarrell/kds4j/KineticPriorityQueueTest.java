@@ -28,9 +28,9 @@ public class KineticPriorityQueueTest {
         10 -> C, B, A
          */
 
-        queueUnderTest.add(new KineticElement<>("A", x -> 8 - x));
-        queueUnderTest.add(new KineticElement<>("B", x -> x / 2 + 5));
-        queueUnderTest.add(new KineticElement<>("C", x -> (x * x) / 2 - 4 * x));
+        queueUnderTest.add(new OneDimensionalKineticElement<>("A", x -> 8 - x));
+        queueUnderTest.add(new OneDimensionalKineticElement<>("B", x -> x / 2 + 5));
+        queueUnderTest.add(new OneDimensionalKineticElement<>("C", x -> (x * x) / 2 - 4 * x));
 
         assertThat(queueUnderTest.peek().element).isEqualTo("A");
 
@@ -60,9 +60,9 @@ public class KineticPriorityQueueTest {
         8  -> B, C, A
         10 -> C, B, A
          */
-        KineticElement<String> first = new KineticElement<>("A", x -> 8 - x);
-        KineticElement<String> second = new KineticElement<>("B", x -> x / 2 + 5);
-        KineticElement<String> third = new KineticElement<>("C", x -> (x * x) / 2 - 4 * x);
+        OneDimensionalKineticElement<String> first = new OneDimensionalKineticElement<>("A", x -> 8 - x);
+        OneDimensionalKineticElement<String> second = new OneDimensionalKineticElement<>("B", x -> x / 2 + 5);
+        OneDimensionalKineticElement<String> third = new OneDimensionalKineticElement<>("C", x -> (x * x) / 2 - 4 * x);
 
         KineticPriorityQueue<String> queueUnderTestAtZero = new KineticPriorityQueue<String>(0.0);
 

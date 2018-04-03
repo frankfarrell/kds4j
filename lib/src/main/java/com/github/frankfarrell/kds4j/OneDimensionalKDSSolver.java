@@ -37,13 +37,13 @@ public class OneDimensionalKDSSolver {
         return new BracketingNthOrderBrentSolver(DEFAULT_RELATIVE_ACCURACY, DEFAULT_ABSOLUTE_ACCURACY, DEFAULT_MAXIMAL_ORDER);
     }
 
-    public Optional<Double> calculateIntersection(final Function<Double, Double> f,
+    protected Optional<Double> calculateIntersection(final Function<Double, Double> f,
                                                   final Function<Double, Double> g,
                                                   final Double time){
         return calculateIntersectionInner(f,g,time, time+1, 0);
     }
 
-    public Optional<Double> calculateIntersectionInner(final Function<Double, Double> f,
+    protected Optional<Double> calculateIntersectionInner(final Function<Double, Double> f,
                                                        final Function<Double, Double> g,
                                                        final Double time,
                                                        final Double upperBound,

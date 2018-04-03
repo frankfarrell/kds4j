@@ -9,19 +9,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Created by frankfarrell on 30/03/2018.
+ * Implementation of a kinetic sorted list.
+ *
+ * @see <a href="https://en.wikipedia.org/wiki/Kinetic_sorted_list">Wikipedia entry</a>
+ *
+ * @author frankfarrell
+ * @since 0.0.1
  */
-public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implements KineticDataStructure {
+public class KineticSortedList<E> extends AbstractList<OneDimensionalKineticElement<E>> implements KineticDataStructure {
 
     @Override
-    public KineticElement<E> get(final int index) {
+    public OneDimensionalKineticElement<E> get(final int index) {
         return this.elements.get(index);
     }
 
     /*
     These two ArrayLists store elements and the relevant certificatesPriorityQueue. Eg, a cert with itself and i+1
      */
-    private final ArrayList<KineticElement<E>> elements;
+    private final ArrayList<OneDimensionalKineticElement<E>> elements;
     private final ArrayList<Certificate<E>> elementCertificates;
 
     /*
@@ -58,7 +63,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
 
 
     public KineticSortedList(final Double startTime,
-                                final Collection<KineticElement<E>> elements) {
+                                final Collection<OneDimensionalKineticElement<E>> elements) {
         this.time = startTime;
 
         this.solver = new OneDimensionalKDSSolver();
@@ -72,7 +77,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
     }
 
     public KineticSortedList(final Double startTime,
-                                final Collection<KineticElement<E>> elements,
+                                final Collection<OneDimensionalKineticElement<E>> elements,
                                 final BracketingNthOrderBrentSolver solver) {
         this.time = startTime;
         this.solver = new OneDimensionalKDSSolver(solver);
@@ -98,8 +103,6 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
         this.certificatesPriorityQueue = new PriorityQueue<>(getCertificateComparator());
     }
 
-    //Advances the system to time
-    //Returns boolean indicating whether any priorities have changed
     public Boolean advance(final Double t) {
 
         if (t < time) {
@@ -115,7 +118,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
 
     @Deprecated
     @Override
-    public Iterator<KineticElement<E>> iterator() {
+    public Iterator<OneDimensionalKineticElement<E>> iterator() {
         throw new NotImplementedException();
     }
 
@@ -125,7 +128,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
     }
 
     @Override
-    public boolean add(final KineticElement<E> element) {
+    public boolean add(final OneDimensionalKineticElement<E> element) {
         /*
         Do binary search on ArrayList to determine where to insert it.
         We then create a new cert for i-1 -> i and i -> i+1
@@ -157,7 +160,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
 
         //If its the highest priority element, it is not the right (lower) element in any certficate
         if(indexProper > 0){
-            final KineticElement<E> higher = elements.get(indexProper -1);
+            final OneDimensionalKineticElement<E> higher = elements.get(indexProper -1);
             final Certificate<E> higherCertificate = solver.calculateIntersection(higher.function, element.function, this.time)
                     .map(value ->  new Certificate<E>(higher.element, element.element, value))
                     .orElse(new Certificate<E>(higher.element, element.element));
@@ -173,7 +176,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
 
         //Element certificates is always of size one less than elements
         if(elements.size()-1 > indexProper){
-            final KineticElement<E> lower = elements.get(indexProper  + 1);
+            final OneDimensionalKineticElement<E> lower = elements.get(indexProper  + 1);
             final Certificate<E> lowerCertificate = solver.calculateIntersection(element.function, lower.function, this.time)
                     .map(value ->  new Certificate<E>(element.element, lower.element, value))
                     .orElse(new Certificate<E>(element.element, lower.element));
@@ -185,11 +188,11 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
     }
 
     @Override
-    public KineticElement<E> remove(final int index) {
+    public OneDimensionalKineticElement<E> remove(final int index) {
 
         //Returns and deletes the first element in the ArrayList.
         //also deletes from certs ArrayList
-        final KineticElement<E> element = elements.remove(index);
+        final OneDimensionalKineticElement<E> element = elements.remove(index);
         if(elementCertificates.size() > 0){
             final Certificate<E> cert = elementCertificates.remove(index);
             elementCertificates.remove(cert);
@@ -199,8 +202,8 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
         if(index>0){
             //we need to create a new cert for i-1 pointing to index
 
-            final KineticElement<E> left = elements.get(index -1);
-            final KineticElement<E> right = elements.get(index);
+            final OneDimensionalKineticElement<E> left = elements.get(index -1);
+            final OneDimensionalKineticElement<E> right = elements.get(index);
             final Certificate<E> newCertificate =
                     solver.calculateIntersection(left.function, right.function, this.time)
                             .map(value ->  new Certificate<E>(left.element, right.element, value))
@@ -214,7 +217,7 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
         return element;
     }
 
-    protected ArrayList<KineticElement<E>> getTotalOrdering(final Collection<KineticElement<E>> elements, final Double time) {
+    protected ArrayList<OneDimensionalKineticElement<E>> getTotalOrdering(final Collection<OneDimensionalKineticElement<E>> elements, final Double time) {
         return elements.stream().sorted((x, y) -> {
             final Double xValue = x.function.apply(this.time);
             final Double yValue = y.function.apply(this.time);
@@ -248,11 +251,11 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
     Returns a ArrayList of certificatesPriorityQueue with the same ordering as list passed.
     It does not give the last element a certificate
      */
-    private ArrayList<Certificate<E>> getElementCertificates(ArrayList<KineticElement<E>> elements) {
+    private ArrayList<Certificate<E>> getElementCertificates(ArrayList<OneDimensionalKineticElement<E>> elements) {
         return IntStream.range(0, elements.size() -1)
                 .mapToObj(i -> {
-                    final KineticElement<E> left = elements.get(i);
-                    final KineticElement<E> right = elements.get(i +1);
+                    final OneDimensionalKineticElement<E> left = elements.get(i);
+                    final OneDimensionalKineticElement<E> right = elements.get(i +1);
                     return solver.calculateIntersection(left.function, right.function, this.time)
                             .map(value ->  new Certificate<E>(left.element, right.element, value))
                             .orElse(new Certificate<E>(left.element, right.element));
@@ -292,9 +295,9 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
 
             final List<Integer> elementIndicesPlusOne = new ArrayList<>(elementIndicesPlusOneTreeSet);
 
-            final List<KineticElement<E>> invalidatedElements = elementIndicesPlusOne.stream().map(elements::get).collect(Collectors.toList());
+            final List<OneDimensionalKineticElement<E>> invalidatedElements = elementIndicesPlusOne.stream().map(elements::get).collect(Collectors.toList());
 
-            final List<KineticElement<E>> sortedElements = getTotalOrdering(invalidatedElements, this.time);
+            final List<OneDimensionalKineticElement<E>> sortedElements = getTotalOrdering(invalidatedElements, this.time);
 
             //Zip indices and the sorted elements into the elements and certificates lists
             final List<Certificate<E>> newCertificates =
@@ -314,9 +317,9 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
                                 }
                                 else{
 
-                                    final KineticElement<E> left = sortedElements.get(i);
+                                    final OneDimensionalKineticElement<E> left = sortedElements.get(i);
                                     final Integer indexOfLeft = elementIndicesPlusOne.get(i);
-                                    final KineticElement<E> potentialRight = elements.set(indexOfLeft, left);
+                                    final OneDimensionalKineticElement<E> potentialRight = elements.set(indexOfLeft, left);
 
                                     //Its the last element now, it has no certificate
                                     if (indexOfLeft +1 >= elements.size()) {
@@ -326,14 +329,14 @@ public class KineticSortedList<E> extends AbstractList<KineticElement<E>> implem
                                     final Certificate<E> newCertificate;
                                     //Its the last of the sorted elements no need to swap
                                     if(i.equals(sortedElements.size()-1)){
-                                        final KineticElement<E> right = elements.get(indexOfLeft +1);
+                                        final OneDimensionalKineticElement<E> right = elements.get(indexOfLeft +1);
                                         newCertificate =
                                                 solver.calculateIntersection(left.function, right.function, this.time)
                                                         .map(value ->  new Certificate<E>(left.element, right.element, value))
                                                         .orElse(new Certificate<E>(left.element, right.element));
                                     }
                                     else{
-                                        final KineticElement<E> actualRight;
+                                        final OneDimensionalKineticElement<E> actualRight;
 
                                         //If there was no change we do not need to reorder
                                         if(!potentialRight.equals(left)){

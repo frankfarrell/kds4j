@@ -23,9 +23,9 @@ public class KineticSortedListTest {
         10 -> C, B, A
          */
 
-        listUnderTest.add(new KineticElement<>("A", x -> 8 - x));
-        listUnderTest.add(new KineticElement<>("B", x -> x / 2 + 5));
-        listUnderTest.add(new KineticElement<>("C", x -> (x * x) / 2 - 4 * x));
+        listUnderTest.add(new OneDimensionalKineticElement<>("A", x -> 8 - x));
+        listUnderTest.add(new OneDimensionalKineticElement<>("B", x -> x / 2 + 5));
+        listUnderTest.add(new OneDimensionalKineticElement<>("C", x -> (x * x) / 2 - 4 * x));
 
         assertThat(listUnderTest.get(0).element).isEqualTo("A");
         assertThat(listUnderTest.get(1).element).isEqualTo("B");
@@ -64,13 +64,13 @@ public class KineticSortedListTest {
         10 -> C, B, A
          */
 
-        KineticElement<String> first = new KineticElement<>("A", x -> 8 - x);
-        KineticElement<String> second = new KineticElement<>("B", x -> x / 2 + 5);
-        KineticElement<String> third = new KineticElement<>("C", x -> (x * x) / 2 - 4 * x);
+        OneDimensionalKineticElement<String> first = new OneDimensionalKineticElement<>("A", x -> 8 - x);
+        OneDimensionalKineticElement<String> second = new OneDimensionalKineticElement<>("B", x -> x / 2 + 5);
+        OneDimensionalKineticElement<String> third = new OneDimensionalKineticElement<>("C", x -> (x * x) / 2 - 4 * x);
 
-        listUnderTest.add(new KineticElement<>("A", x -> 8 - x));
-        listUnderTest.add(new KineticElement<>("B", x -> x / 2 + 5));
-        listUnderTest.add(new KineticElement<>("C", x -> (x * x) / 2 - 4 * x));
+        listUnderTest.add(new OneDimensionalKineticElement<>("A", x -> 8 - x));
+        listUnderTest.add(new OneDimensionalKineticElement<>("B", x -> x / 2 + 5));
+        listUnderTest.add(new OneDimensionalKineticElement<>("C", x -> (x * x) / 2 - 4 * x));
 
         assertThat(listUnderTest.advance(3.0)).isTrue();
         assertThat(listUnderTest.remove(1));
