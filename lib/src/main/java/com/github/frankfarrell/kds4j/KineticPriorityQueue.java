@@ -11,27 +11,27 @@ import java.util.stream.IntStream;
 /**
  * Created by frankfarrell on 22/02/2018.
  */
-public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
+public class KineticPriorityQueue<E> extends AbstractQueue<KineticElement<E>> implements KineticDataStructure{
 
     /*
     These two ArrayLists store elements and the relevant certificatesPriorityQueue. Eg, a cert with itself and i+1
      */
-    private final ArrayList<QueueElement<E>> elements;
-    private final ArrayList<Certificate> elementCertificates;
+    private final ArrayList<KineticElement<E>> elements;
+    private final ArrayList<Certificate<E>> elementCertificates;
 
     /*
     Prioirity queue which stores certificatesPriorityQueue where priority is time of expriry
      */
-    private final PriorityQueue<Certificate> certificatesPriorityQueue;
+    private final PriorityQueue<Certificate<E>> certificatesPriorityQueue;
     private Double time;
 
-    private final OneDimensionalKineticDataStructureSolver solver;
+    private final OneDimensionalKDSSolver solver;
 
     //TODO Make a single constructor
     public KineticPriorityQueue() {
         this.time = 0.0;
 
-        this.solver = new OneDimensionalKineticDataStructureSolver();
+        this.solver = new OneDimensionalKDSSolver();
 
         this.elements = new ArrayList<>();
 
@@ -43,7 +43,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     public KineticPriorityQueue(final Double startTime) {
         this.time = startTime;
 
-        this.solver = new OneDimensionalKineticDataStructureSolver();
+        this.solver = new OneDimensionalKDSSolver();
 
         this.elements = new ArrayList<>();
         this.elementCertificates = new ArrayList<>();
@@ -53,10 +53,10 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
 
     public KineticPriorityQueue(final Double startTime,
-                                final Collection<QueueElement<E>> elements) {
+                                final Collection<KineticElement<E>> elements) {
         this.time = startTime;
 
-        this.solver = new OneDimensionalKineticDataStructureSolver();
+        this.solver = new OneDimensionalKDSSolver();
 
         this.elements = getTotalOrdering(elements, startTime);
         this.elementCertificates = getElementCertificates(this.elements);
@@ -67,10 +67,10 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     }
 
     public KineticPriorityQueue(final Double startTime,
-                                final Collection<QueueElement<E>> elements,
+                                final Collection<KineticElement<E>> elements,
                                 final BracketingNthOrderBrentSolver solver) {
         this.time = startTime;
-        this.solver = new OneDimensionalKineticDataStructureSolver(solver);
+        this.solver = new OneDimensionalKDSSolver(solver);
 
         this.elements = getTotalOrdering(elements, startTime);
         this.elementCertificates = getElementCertificates(this.elements);
@@ -86,7 +86,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
         this.time = startTime;
 
-        this.solver = new OneDimensionalKineticDataStructureSolver(solver);
+        this.solver = new OneDimensionalKDSSolver(solver);
 
         this.elements = new ArrayList<>();
         this.elementCertificates = new ArrayList<>();
@@ -110,7 +110,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
     @Deprecated
     @Override
-    public Iterator<QueueElement<E>> iterator() {
+    public Iterator<KineticElement<E>> iterator() {
         throw new NotImplementedException();
     }
 
@@ -120,7 +120,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     }
 
     @Override
-    public boolean offer(final QueueElement<E> element) {
+    public boolean offer(final KineticElement<E> element) {
         /*
         Do binary search on ArrayList to determine where to insert it.
         We then create a new cert for i-1 -> i and i -> i+1
@@ -152,10 +152,10 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
         //If its the highest priority element, it is not the right (lower) element in any certficate
         if(indexProper > 0){
-            final QueueElement<E> higher = elements.get(indexProper -1);
-            final Certificate higherCertificate = solver.calculateIntersection(higher.function, element.function, this.time)
-                    .map(value ->  new Certificate(higher.element, element.element, value))
-                    .orElse(new Certificate(higher.element, element.element));
+            final KineticElement<E> higher = elements.get(indexProper -1);
+            final Certificate<E> higherCertificate = solver.calculateIntersection(higher.function, element.function, this.time)
+                    .map(value ->  new Certificate<E>(higher.element, element.element, value))
+                    .orElse(new Certificate<E>(higher.element, element.element));
 
             certificatesPriorityQueue.add(higherCertificate);
             if(elementCertificates.size() < indexProper){
@@ -168,25 +168,25 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
         //Element certificates is always of size one less than elements
         if(elements.size()-1 > indexProper){
-            final QueueElement<E> lower = elements.get(indexProper  + 1);
-            final Certificate lowerCertificate = solver.calculateIntersection(element.function, lower.function, this.time)
-                    .map(value ->  new Certificate(element.element, lower.element, value))
-                    .orElse(new Certificate(element.element, lower.element));
+            final KineticElement<E> lower = elements.get(indexProper  + 1);
+            final Certificate<E> lowerCertificate = solver.calculateIntersection(element.function, lower.function, this.time)
+                    .map(value ->  new Certificate<E>(element.element, lower.element, value))
+                    .orElse(new Certificate<E>(element.element, lower.element));
             certificatesPriorityQueue.add(lowerCertificate);
             elementCertificates.add(indexProper, lowerCertificate);
         }
 
         return true;
     }
-
+    
     @Override
-    public QueueElement<E> poll() {
+    public KineticElement<E> poll() {
 
         //Returns and deletes the first element in the ArrayList.
         //also deletes from certs ArrayList
-        final QueueElement<E> firstElement = elements.remove(0);
+        final KineticElement<E> firstElement = elements.remove(0);
         if(elementCertificates.size() > 0){
-            final Certificate firstCertificate = elementCertificates.remove(0);
+            final Certificate<E> firstCertificate = elementCertificates.remove(0);
             elementCertificates.remove(firstCertificate);
             certificatesPriorityQueue.remove(firstCertificate);
         }
@@ -195,13 +195,13 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     }
 
     @Override
-    public QueueElement<E> peek() {
+    public KineticElement<E> peek() {
         //Returns first element if it exists from ArrayList without deletion
         return elements.get(0);
     }
 
 
-    protected ArrayList<QueueElement<E>> getTotalOrdering(final Collection<QueueElement<E>> elements, final Double time) {
+    protected ArrayList<KineticElement<E>> getTotalOrdering(final Collection<KineticElement<E>> elements, final Double time) {
         return elements.stream().sorted((x, y) -> {
             final Double xValue = x.function.apply(this.time);
             final Double yValue = y.function.apply(this.time);
@@ -217,7 +217,7 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
 
 
-    private Comparator<Certificate> getCertificateComparator() {
+    private Comparator<Certificate<E>> getCertificateComparator() {
         return (left, right) -> {
             if (left.expiryTime.isPresent() && right.expiryTime.isPresent()) {
                 return left.expiryTime.get().compareTo(right.expiryTime.get());
@@ -235,14 +235,14 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
     Returns a ArrayList of certificatesPriorityQueue with the same ordering as list passed.
     It does not give the last element a certificate
      */
-    private ArrayList<Certificate> getElementCertificates(ArrayList<QueueElement<E>> elements) {
+    private ArrayList<Certificate<E>> getElementCertificates(ArrayList<KineticElement<E>> elements) {
         return IntStream.range(0, elements.size() -1)
                 .mapToObj(i -> {
-                    final QueueElement<E> left = elements.get(i);
-                    final QueueElement<E> right = elements.get(i +1);
+                    final KineticElement<E> left = elements.get(i);
+                    final KineticElement<E> right = elements.get(i +1);
                     return solver.calculateIntersection(left.function, right.function, this.time)
-                            .map(value ->  new Certificate(left.element, right.element, value))
-                            .orElse(new Certificate(left.element, right.element));
+                            .map(value ->  new Certificate<E>(left.element, right.element, value))
+                            .orElse(new Certificate<E>(left.element, right.element));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -279,12 +279,12 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
             final List<Integer> elementIndicesPlusOne = new ArrayList<>(elementIndicesPlusOneTreeSet);
 
-            final List<QueueElement<E>> invalidatedElements = elementIndicesPlusOne.stream().map(elements::get).collect(Collectors.toList());
+            final List<KineticElement<E>> invalidatedElements = elementIndicesPlusOne.stream().map(elements::get).collect(Collectors.toList());
 
-            final List<QueueElement<E>> sortedElements = getTotalOrdering(invalidatedElements, this.time);
+            final List<KineticElement<E>> sortedElements = getTotalOrdering(invalidatedElements, this.time);
 
             //Zip indices and the sorted elements into the elements and certificates lists
-            final List<Certificate> newCertificates =
+            final List<Certificate<E>> newCertificates =
                     IntStream.range(0, sortedElements.size())
                             //This is a way to reverse the order of the intstream
                             .boxed()
@@ -297,30 +297,30 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
                                 //Im not sure how this could happen though its the last element, it wont have a certificate
                                 if(elementIndicesPlusOne.get(i) > elements.size() -1){
                                     elements.add(sortedElements.get(i));
-                                    return Optional.<Certificate>empty();
+                                    return Optional.<Certificate<E>>empty();
                                 }
                                 else{
 
-                                    final QueueElement<E> left = sortedElements.get(i);
+                                    final KineticElement<E> left = sortedElements.get(i);
                                     final Integer indexOfLeft = elementIndicesPlusOne.get(i);
-                                    final QueueElement<E> potentialRight = elements.set(indexOfLeft, left);
+                                    final KineticElement<E> potentialRight = elements.set(indexOfLeft, left);
 
                                     //Its the last element now, it has no certificate
                                     if (indexOfLeft +1 >= elements.size()) {
-                                        return Optional.<Certificate>empty();
+                                        return Optional.<Certificate<E>>empty();
                                     }
 
-                                    final Certificate newCertificate;
+                                    final Certificate<E> newCertificate;
                                     //Its the last of the sorted elements no need to swap
                                     if(i.equals(sortedElements.size()-1)){
-                                        final QueueElement<E> right = elements.get(indexOfLeft +1);
+                                        final KineticElement<E> right = elements.get(indexOfLeft +1);
                                         newCertificate =
                                                 solver.calculateIntersection(left.function, right.function, this.time)
-                                                        .map(value ->  new Certificate(left.element, right.element, value))
-                                                        .orElse(new Certificate(left.element, right.element));
+                                                        .map(value ->  new Certificate<E>(left.element, right.element, value))
+                                                        .orElse(new Certificate<E>(left.element, right.element));
                                     }
                                     else{
-                                        final QueueElement<E> actualRight;
+                                        final KineticElement<E> actualRight;
 
                                         //If there was no change we do not need to reorder
                                         if(!potentialRight.equals(left)){
@@ -333,8 +333,8 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
 
                                         newCertificate =
                                                 solver.calculateIntersection(left.function, actualRight.function, this.time)
-                                                        .map(value ->  new Certificate(left.element, actualRight.element, value))
-                                                        .orElse(new Certificate(left.element, actualRight.element));
+                                                        .map(value ->  new Certificate<E>(left.element, actualRight.element, value))
+                                                        .orElse(new Certificate<E>(left.element, actualRight.element));
                                     }
 
                                     if(elementCertificates.size() < elementIndicesPlusOne.get(i)){
@@ -357,33 +357,6 @@ public class KineticPriorityQueue<E> extends AbstractQueue<QueueElement<E>> {
         else{
             return false;
             //Priority ordering hasn't changed
-        }
-    }
-
-
-
-
-    /*
-    Left has higher priority than right until expiryTime
-     */
-    private class Certificate {
-        final E left;//has priority
-        final E right;
-        final Optional<Double> expiryTime;
-
-        private Certificate(final E left,
-                            final E right,
-                            final Double expiryTime) {
-            this.left = left;
-            this.right = right;
-            this.expiryTime = Optional.of(expiryTime);
-        }
-
-        private Certificate(final E left,
-                            final E right) {
-            this.left = left;
-            this.right = right;
-            this.expiryTime = Optional.empty();
         }
     }
 }

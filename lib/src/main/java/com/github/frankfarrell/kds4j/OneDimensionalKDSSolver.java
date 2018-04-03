@@ -11,7 +11,7 @@ import java.util.function.Function;
 /**
  * Created by frankfarrell on 30/03/2018.
  */
-public class OneDimensionalKineticDataStructureSolver {
+public class OneDimensionalKDSSolver {
 
     //Make all these configurable if the client has some particular use case.
     //Tweaking these can make the data structure more efficient in certain circumstances
@@ -25,11 +25,11 @@ public class OneDimensionalKineticDataStructureSolver {
 
     private final BracketingNthOrderBrentSolver solver;
 
-    public OneDimensionalKineticDataStructureSolver() {
+    public OneDimensionalKDSSolver() {
         this.solver = getDefaultSolver();
     }
 
-    public OneDimensionalKineticDataStructureSolver(final BracketingNthOrderBrentSolver solver) {
+    public OneDimensionalKDSSolver(final BracketingNthOrderBrentSolver solver) {
         this.solver = solver;
     }
 

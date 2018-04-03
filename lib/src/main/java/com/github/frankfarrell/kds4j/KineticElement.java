@@ -6,7 +6,7 @@ import java.util.function.Function;
  * Created by frankfarrell on 22/02/2018.
  *
  */
-public class QueueElement<E> {
+public class KineticElement<E> {
 
 
     final E element;
@@ -16,7 +16,7 @@ public class QueueElement<E> {
     Where function is f(time) -> priority
     Eg, pass in time and get back a priority
      */
-    public QueueElement(E element, Function<Double, Double> function) {
+    public KineticElement(E element, Function<Double, Double> function) {
         this.element = element;
         this.function = function;
     }

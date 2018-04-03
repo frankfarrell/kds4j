@@ -1,11 +1,6 @@
 package com.github.frankfarrell.kds4j;
 
-import org.apache.commons.math3.analysis.solvers.BrentSolver;
-import org.assertj.core.data.Percentage;
 import org.junit.Test;
-
-import java.util.Optional;
-import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -33,9 +28,9 @@ public class KineticPriorityQueueTest {
         10 -> C, B, A
          */
 
-        queueUnderTest.add(new QueueElement<>("A", x -> 8 - x));
-        queueUnderTest.add(new QueueElement<>("B", x -> x / 2 + 5));
-        queueUnderTest.add(new QueueElement<>("C", x -> (x * x) / 2 - 4 * x));
+        queueUnderTest.add(new KineticElement<>("A", x -> 8 - x));
+        queueUnderTest.add(new KineticElement<>("B", x -> x / 2 + 5));
+        queueUnderTest.add(new KineticElement<>("C", x -> (x * x) / 2 - 4 * x));
 
         assertThat(queueUnderTest.peek().element).isEqualTo("A");
 
@@ -65,9 +60,9 @@ public class KineticPriorityQueueTest {
         8  -> B, C, A
         10 -> C, B, A
          */
-        QueueElement<String> first = new QueueElement<>("A", x -> 8 - x);
-        QueueElement<String> second = new QueueElement<>("B", x -> x / 2 + 5);
-        QueueElement<String> third = new QueueElement<>("C", x -> (x * x) / 2 - 4 * x);
+        KineticElement<String> first = new KineticElement<>("A", x -> 8 - x);
+        KineticElement<String> second = new KineticElement<>("B", x -> x / 2 + 5);
+        KineticElement<String> third = new KineticElement<>("C", x -> (x * x) / 2 - 4 * x);
 
         KineticPriorityQueue<String> queueUnderTestAtZero = new KineticPriorityQueue<String>(0.0);
 
