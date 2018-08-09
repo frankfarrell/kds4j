@@ -18,3 +18,14 @@ dependencies {
     testCompile("org.assertj:assertj-core:3.8.0")
 
 }
+
+jar {
+    baseName = "kds4j"
+    archivesBaseName = "kds4j"
+    manifest {
+        attributes("Implementation-Title": "Set of naive kinetic data structures in java8", "Implementation-Version": "0.0.1")
+    }
+    into("lib") {
+        from configurations.runtime
+    }
+}

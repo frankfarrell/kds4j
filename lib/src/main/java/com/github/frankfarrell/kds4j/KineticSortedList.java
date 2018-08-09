@@ -116,10 +116,12 @@ public class KineticSortedList<E> extends AbstractList<OneDimensionalKineticElem
         }
     }
 
-    @Deprecated
+    /**
+     * @return An iterator on unmodifiable list snapshot of the ordered elements
+     */
     @Override
     public Iterator<OneDimensionalKineticElement<E>> iterator() {
-        throw new NotImplementedException();
+        return Collections.unmodifiableList(elements).iterator();
     }
 
     @Override

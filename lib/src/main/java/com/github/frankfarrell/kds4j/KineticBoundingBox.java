@@ -6,12 +6,12 @@ package com.github.frankfarrell.kds4j;
  * Maintains two KineticSortedLists to keep track of top, bottom, left and right.
  * The bounding box at any time is determined by the head and tails of these queues.
  */
-public class KineticBoundingBox implements KineticDataStructure{
+public class KineticBoundingBox<E> implements KineticDataStructure{
 
     private Double time;
 
-    private final KineticSortedList<Void> xQueue;
-    private final KineticSortedList<Void> yQueue;
+    private final KineticSortedList<E> xQueue;
+    private final KineticSortedList<E> yQueue;
 
     public KineticBoundingBox() {
         this.xQueue = new KineticSortedList<>();
@@ -30,7 +30,7 @@ public class KineticBoundingBox implements KineticDataStructure{
         }
     }
 
-    public boolean add(final TwoDimensionalKineticElement<Void> element) {
+    public boolean add(final TwoDimensionalKineticElement<E> element) {
         return this.xQueue.add(new OneDimensionalKineticElement<>(element.element, element.xFunction)) && this.yQueue.add(new OneDimensionalKineticElement<>(element.element, element.yFunction));
     }
 
