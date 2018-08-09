@@ -219,8 +219,8 @@ public class KineticSortedList<E> extends AbstractList<OneDimensionalKineticElem
 
     protected ArrayList<OneDimensionalKineticElement<E>> getTotalOrdering(final Collection<OneDimensionalKineticElement<E>> elements, final Double time) {
         return elements.stream().sorted((x, y) -> {
-            final Double xValue = x.function.apply(this.time);
-            final Double yValue = y.function.apply(this.time);
+            final Double xValue = x.function.apply(time);
+            final Double yValue = y.function.apply(time);
             if (xValue >yValue){
                 return -1;
             }
@@ -269,9 +269,10 @@ public class KineticSortedList<E> extends AbstractList<OneDimensionalKineticElem
     private boolean reCalculatePriorities() {
 
         final List<Certificate> invalidatedCertificates = new ArrayList<>();
+        //noinspection ConstantConditions
         while(this.certificatesPriorityQueue.size() > 0 &&
-                this.certificatesPriorityQueue.peek().expiryTime.isPresent() &&
-                this.certificatesPriorityQueue.peek().expiryTime.get() < this.time){
+                Objects.requireNonNull(this.certificatesPriorityQueue.peek()).expiryTime.isPresent() &&
+                Objects.requireNonNull(this.certificatesPriorityQueue.peek()).expiryTime.get() < this.time){
             invalidatedCertificates.add(this.certificatesPriorityQueue.poll());
         }
 
