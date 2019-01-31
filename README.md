@@ -3,7 +3,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae57f4ca78da48708efdbcd4b6e788b4)](https://www.codacy.com/app/frankfarrell/kds4j?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frankfarrell/kds4j&amp;utm_campaign=Badge_Grade)
 
 
-Kinetic Data Structures for Java 8+
+Kinetic Data Structures for Java 8+. Note this is a WIP to learn about kinetic data structures, so no claims about how performant or correct they are! 
 
 ## What is it?
 Data structures where the ordering is a function of time. 
